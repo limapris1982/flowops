@@ -1992,7 +1992,8 @@ Equipe Manutec`
         {clients
   .filter(c => showInactiveClients ? c.active === false : c.active !== false)
   .map(c => {
-            const hasManutencao = c.contract?.hasManutencao; const hasLimpeza = c.contract?.hasLimpeza;
+            const hasManutencao = c.contract?.hasManutencao === true;
+const hasLimpeza = c.contract?.hasLimpeza === true;
             const p = getClientQuotaHealth(c.contract, 'preventiva'); const e = getClientQuotaHealth(c.contract, 'emergencial'); 
             return (
               <div key={c.id} className="p-5 flex flex-col lg:flex-row justify-between gap-5 hover:bg-zinc-50 transition-colors group">
@@ -2006,7 +2007,7 @@ Equipe Manutec`
                        : (<div className="px-2.5 py-1 rounded-md text-[10px] font-medium border border-zinc-200 text-zinc-500 bg-zinc-50 flex items-center gap-1 w-fit uppercase"><Sparkles size={10}/> Sem Contrato Limpeza</div>)}
                        {c.contract?.description && (<div className="mt-1 text-[10px] text-zinc-500 italic max-w-[200px] break-words uppercase font-bold">"{c.contract.description}"</div>)}
                      </div>
-                     <button onClick={()=>{ setEditingClient(c); setContractData({ hasManutencao: c.contract?.hasManutencao ?? true, hasLimpeza: c.contract?.hasLimpeza ?? false, preventiva: c.contract?.preventiva || { total: 1, used: 0 }, emergencial: c.contract?.emergencial || { total: 2, used: 0 }, limpezaDays: c.contract?.limpezaDays || 5, description: c.contract?.description || '' }); setShowContractModal(true); }} className="p-2 border border-zinc-200 rounded-md text-zinc-500 hover:text-orange-600 hover:border-orange-300 hover:bg-orange-50 transition-all shadow-sm"><Edit size={16}/></button>
+                     <button onClick={()=>{ setEditingClient(c); setContractData({ hasManutencao: c.contract?.hasManutencao === true, hasLimpeza: c.contract?.hasLimpeza ?? false, preventiva: c.contract?.preventiva || { total: 1, used: 0 }, emergencial: c.contract?.emergencial || { total: 2, used: 0 }, limpezaDays: c.contract?.limpezaDays || 5, description: c.contract?.description || '' }); setShowContractModal(true); }} className="p-2 border border-zinc-200 rounded-md text-zinc-500 hover:text-orange-600 hover:border-orange-300 hover:bg-orange-50 transition-all shadow-sm"><Edit size={16}/></button>
                    {isAdmin && (
   <button
     onClick={async () => {
