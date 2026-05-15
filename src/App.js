@@ -1840,7 +1840,13 @@ Equipe Manutec`
   <h2 className="text-2xl font-bold text-[#2F2F2F] uppercase">
     GESTÃO DE CONTRATOS
   </h2>
-
+  <button
+  type="button"
+  onClick={() => setShowAddClientForm(true)}
+  className="bg-orange-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-orange-700 transition-all"
+>
+  + Novo Cliente
+</button>
   <button
     type="button"
     onClick={() => setShowInactiveClients(!showInactiveClients)}
