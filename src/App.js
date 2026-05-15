@@ -1313,7 +1313,7 @@ if (isEditing) {
                     </div> 
                   </div> 
                   {!isClient && (
-  <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto shrink-0 mt-2 md:mt-0">
+  <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto mt-2 sm:mt-0">
     {userRole !== 'cliente' && sch.status !== 'Concluído' && (
   <button
     onClick={() => {
