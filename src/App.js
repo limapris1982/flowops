@@ -1654,7 +1654,7 @@ function renderHistoryList() {
       setNeedsFollowUp(false);
       setCurrentView('new');
     }}
-    className="w-full md:w-auto bg-yellow-50 border border-yellow-200 text-yellow-700 px-4 py-2 rounded-lg font-bold text-xs hover:bg-yellow-100 transition-all shadow-sm"
+    className="w-full md:w-auto bg-yellow-50 border border-yellow-200 text-yellow-700 px-3 py-2 rounded-lg font-bold text-[11px] hover:bg-yellow-100 transition-all shadow-sm"
   >
     Finalizar OS
   </button>
