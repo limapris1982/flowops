@@ -479,7 +479,8 @@ const handleChecklistPhoto = async (id, file) => {
   if (!file) return;
 
   try {
-    const fileName = `${Date.now()}-${file.name || 'foto.jpg'}`;
+    const safeName = file.name || 'foto.jpg';
+    const fileName = `${Date.now()}-${safeName}`;
 
     const storageRef = ref(storage, `checklists/${fileName}`);
 
@@ -498,14 +499,12 @@ const handleChecklistPhoto = async (id, file) => {
       )
     );
 
-    notify('Foto enviada com sucesso.', 'success');
-
+    notify('Foto anexada com sucesso.', 'success');
   } catch (error) {
-    console.error(error);
-    notify('Erro ao enviar foto.', 'error');
+    console.error('Erro real ao enviar foto:', error);
+    notify(`Erro ao enviar foto: ${error.message || 'erro desconhecido'}`, 'error');
   }
 };
-
   const handleAddScheduleItem = () => {
     setNewSchedule({...newSchedule, scheduledItems: [...newSchedule.scheduledItems, { id: Date.now().toString() + Math.random(), task: '', location: '' }]});
   };
@@ -665,11 +664,10 @@ const techId = userRole === 'tecnico'
   
     if (!clientData.name || !signatureData || !techId) { notify("Selecione o Cliente, Técnico e adicione Assinatura.", "error"); return; }
     if (!selectedClientId) { notify("Selecione um cliente válido da lista.", "error"); return; }
-    const validChecklistItems = checklistItems
+const validChecklistItems = checklistItems
   .filter(item => item.task.trim() !== '')
   .map(item => ({
     ...item,
-    photo: null,
     photos: Array.isArray(item.photos) ? item.photos : []
   }));
     if (validChecklistItems.length === 0) { notify("Preencha pelo menos um item no Checklist.", "error"); return; }
@@ -1571,31 +1569,21 @@ if (isEditing) {
       multiple={false}
       onClick={saveOSDraft}
       onChange={async (e) => {
-        try {
-          const file = e.target.files?.[0];
+  try {
+    const file = e.target.files?.[0];
 
-          if (!file) return;
+    if (!file) return;
 
-          notify('Processando foto...', 'info');
+    notify('Enviando foto...', 'info');
 
-          let compressedFile;
+    await handleChecklistPhoto(item.id, file);
 
-try {
-  compressedFile = await compressImage(file);
-} catch (err) {
-  console.error('Erro ao comprimir:', err);
+    e.target.value = '';
+  } catch (error) {
+    console.error('Erro no input da foto:', error);
+    notify('Não foi possível anexar a foto.', 'error');
+  }
 
-  compressedFile = file;
-}
-
-          await handleChecklistPhoto(item.id, compressedFile);
-
-          e.target.value = '';
-        } catch (error) {
-          console.error('Erro no input da foto:', error);
-
-          notify('Não foi possível anexar a foto.', 'error');
-        }
       }}
       className="w-full text-xs text-zinc-600"
     />
