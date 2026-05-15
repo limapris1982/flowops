@@ -1795,7 +1795,32 @@ Equipe Manutec`
 
     return (
             <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl border border-zinc-200 p-10 print-container text-[#2F2F2F] animate-in slide-in-from-bottom duration-500">
-        <div className="absolute top-8 right-8 no-print flex gap-2"><button onClick={()=>setCurrentView('history')} className="p-2.5 bg-zinc-100 rounded-lg text-zinc-500 hover:text-[#2F2F2F] transition-all"><X size={20}/></button>{userRole !== 'cliente' && (<button onClick={handleSendEmailClient} className="flex items-center px-4 py-2.5 bg-zinc-800 text-white font-medium text-sm rounded-lg shadow-sm hover:bg-zinc-900 transition-all"><Mail size={16} className="mr-2"/>E-mail Rápido</button>)}<button onClick={handlePrintPDF} className="flex items-center px-5 py-2.5 bg-orange-600 text-white font-medium text-sm rounded-lg shadow-sm hover:bg-orange-700 transition-all"><Printer size={16} className="mr-2"/>Imprimir / Salvar PDF</button></div>
+        <div className="no-print mb-6 flex flex-col sm:flex-row gap-2 w-full sm:justify-end">
+  <button
+    onClick={() => setCurrentView('history')}
+    className="w-full sm:w-auto flex items-center justify-center p-2.5 bg-zinc-100 rounded-lg text-zinc-500 hover:text-[#2F2F2F] transition-all"
+  >
+    <X size={20}/>
+  </button>
+
+  {userRole !== 'cliente' && (
+    <button
+      onClick={handleSendEmailClient}
+      className="w-full sm:w-auto flex items-center justify-center px-4 py-2.5 bg-zinc-800 text-white font-medium text-sm rounded-lg shadow-sm hover:bg-zinc-900 transition-all"
+    >
+      <Mail size={16} className="mr-2"/>
+      E-mail Rápido
+    </button>
+  )}
+
+  <button
+    onClick={handlePrintPDF}
+    className="w-full sm:w-auto flex items-center justify-center px-5 py-2.5 bg-orange-600 text-white font-medium text-sm rounded-lg shadow-sm hover:bg-orange-700 transition-all"
+  >
+    <Printer size={16} className="mr-2"/>
+    Imprimir / Salvar PDF
+  </button>
+</div>
         <div className="flex justify-between items-start border-b-2 border-zinc-200 pb-6 mb-6 mt-2">
            <div><h1 className="text-3xl font-bold flex flex-col text-[#2F2F2F] leading-none uppercase">Manutec<span className="text-orange-600 text-lg mt-1">Soluções em Manutenção</span></h1><p className="text-zinc-500 text-xs mt-3 font-medium uppercase">
   {selectedOrder.osType === 'limpeza'
