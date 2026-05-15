@@ -1613,7 +1613,7 @@ function renderHistoryList() {
         {filteredOrders.map(o => (
           <div
             key={o.id}
-            className="p-5 flex justify-between items-center hover:bg-zinc-50 transition-colors"
+            className="p-5 flex flex-col md:flex-row md:justify-between md:items-center gap-4"
           >
             <div className="flex gap-4 items-center">
               <div className={`p-3 rounded-lg shadow-sm border ${o.osType === 'limpeza' ? 'bg-green-50 text-green-600 border-green-100' : 'bg-orange-50 text-orange-600 border-orange-100'}`}>
@@ -1637,7 +1637,7 @@ function renderHistoryList() {
               </div>
             </div>
 
-            <div className="flex gap-2">
+            <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto">
 
 {o.status === 'Pendente' && (
   <button
@@ -1654,7 +1654,7 @@ function renderHistoryList() {
       setNeedsFollowUp(false);
       setCurrentView('new');
     }}
-    className="bg-yellow-50 border border-yellow-200 text-yellow-700 px-4 py-2 rounded-lg font-bold text-xs hover:bg-yellow-100 transition-all shadow-sm"
+    className="w-full md:w-auto bg-yellow-50 border border-yellow-200 text-yellow-700 px-4 py-2 rounded-lg font-bold text-xs hover:bg-yellow-100 transition-all shadow-sm"
   >
     Finalizar OS
   </button>
@@ -1665,7 +1665,7 @@ function renderHistoryList() {
                   setSelectedOrder(o);
                   setCurrentView('view');
                 }}
-                className="bg-white border border-zinc-300 text-zinc-700 px-4 py-2 rounded-lg font-bold text-xs hover:bg-zinc-50 transition-all shadow-sm"
+                className="w-full md:w-auto bg-yellow-50 border border-yellow-200 text-yellow-700 px-4 py-2 rounded-lg font-bold text-xs hover:bg-yellow-100 transition-all shadow-sm"
               >
                 Visualizar
               </button>
@@ -1678,7 +1678,7 @@ function renderHistoryList() {
                       notify('OS excluída com sucesso.', 'success');
                     }
                   }}
-                  className="bg-red-50 border border-red-200 text-red-600 px-4 py-2 rounded-lg font-bold text-xs hover:bg-red-100 transition-all shadow-sm"
+                  className="w-full md:w-auto bg-yellow-50 border border-yellow-200 text-yellow-700 px-4 py-2 rounded-lg font-bold text-xs hover:bg-yellow-100 transition-all shadow-sm"
                 >
                   Excluir
                 </button>
