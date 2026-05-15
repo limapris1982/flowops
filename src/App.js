@@ -7,7 +7,8 @@ import {
   CalendarDays, Clock, Bell, Edit, ArrowRight, LogOut, LayoutDashboard,
   PackageOpen, Timer, Lamp, DoorOpen, HardHat, Briefcase, Cpu, Activity, Info
 } from 'lucide-react';
-import { auth, db } from './firebase';
+import compressImage from './utils/imageCompression';
+import { auth, db, storage } from './firebase';
 
 import {
   signInWithEmailAndPassword,
@@ -32,6 +33,12 @@ import {
   setDoc,
   arrayUnion
 } from 'firebase/firestore';
+
+import {
+  ref,
+  uploadBytes,
+  getDownloadURL
+} from 'firebase/storage';
 
 
 // --- FILTRO DE PALAVRÕES (PROFANITY FILTER) ---
@@ -297,7 +304,7 @@ export default function App() {
     status: 'pending',
     notes: '',
     dayOfWeek: '',
-    photo: null
+    photos: []
   }
 ]);
   
@@ -305,7 +312,28 @@ export default function App() {
   const [materialsUsed, setMaterialsUsed] = useState('');
   const [signatureData, setSignatureData] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
+  const saveOSDraft = () => {
+  try {
+    sessionStorage.setItem('manutec_os_draft', JSON.stringify({
+      currentView,
+      selectedOrder,
+      editingOrder,
+      osType,
+      visitType,
+      selectedTechId,
+      selectedClientId,
+      clientData,
+      checklistItems,
+      observations,
+      materialsUsed,
+      signatureData
+    }));
+  } catch (error) {
+    console.error('Erro ao salvar rascunho da OS:', error);
+  }
+};
+   
   const [avulsaPrice, setAvulsaPrice] = useState('');
   const [avulsaApproved, setAvulsaApproved] = useState(false);
   const [avulsaStatus, setAvulsaStatus] = useState('executado');
@@ -447,23 +475,37 @@ export default function App() {
     }
     setChecklistItems(checklistItems.map(item => item.id === id ? { ...item, [field]: finalValue } : item));
   };
-const handleChecklistPhoto = (id, file) => {
+const handleChecklistPhoto = async (id, file) => {
   if (!file) return;
 
-  const reader = new FileReader();
+  try {
+    const fileName = `${Date.now()}-${file.name}`;
 
-  reader.onloadend = () => {
+    const storageRef = ref(storage, `checklists/${fileName}`);
+
+    await uploadBytes(storageRef, file);
+
+    const downloadURL = await getDownloadURL(storageRef);
+
     setChecklistItems(prev =>
       prev.map(item =>
         item.id === id
-          ? { ...item, photo: reader.result }
+          ? {
+              ...item,
+              photos: [...(item.photos || []), downloadURL]
+            }
           : item
       )
     );
-  };
 
-  reader.readAsDataURL(file);
+    notify('Foto enviada com sucesso.', 'success');
+
+  } catch (error) {
+    console.error(error);
+    notify('Erro ao enviar foto.', 'error');
+  }
 };
+
   const handleAddScheduleItem = () => {
     setNewSchedule({...newSchedule, scheduledItems: [...newSchedule.scheduledItems, { id: Date.now().toString() + Math.random(), task: '', location: '' }]});
   };
@@ -623,7 +665,13 @@ const techId = userRole === 'tecnico'
   
     if (!clientData.name || !signatureData || !techId) { notify("Selecione o Cliente, Técnico e adicione Assinatura.", "error"); return; }
     if (!selectedClientId) { notify("Selecione um cliente válido da lista.", "error"); return; }
-    const validChecklistItems = checklistItems.filter(item => item.task.trim() !== '');
+    const validChecklistItems = checklistItems
+  .filter(item => item.task.trim() !== '')
+  .map(item => ({
+    ...item,
+    photo: null,
+    photos: Array.isArray(item.photos) ? item.photos : []
+  }));
     if (validChecklistItems.length === 0) { notify("Preencha pelo menos um item no Checklist.", "error"); return; }
     const allTextsToCheck = [
       observations, materialsUsed, avulsaPrice, clientData.name, clientData.address, clientData.responsible,
@@ -1511,33 +1559,53 @@ if (isEditing) {
     className="w-full p-2.5 rounded-lg border border-zinc-300 text-sm outline-none focus:border-orange-500 text-zinc-700 font-bold uppercase"
   />
 </div>
-
 {osType === 'manutencao' && (
   <div className="mt-3">
     <label className="block text-xs font-semibold text-[#2F2F2F] mb-1 uppercase tracking-widest">
-      Foto do item
+      Fotos do item
     </label>
 
     <input
       type="file"
-      accept="image/*"
-      capture="environment"
-      onChange={(e) =>
-        handleChecklistPhoto(item.id, e.target.files[0])
-      }
+      accept=".jpg,.jpeg,.png"
+      multiple={false}
+      onClick={saveOSDraft}
+      onChange={async (e) => {
+        try {
+          const file = e.target.files?.[0];
+
+          if (!file) return;
+
+          notify('Processando foto...', 'info');
+
+          const compressedFile = await compressImage(file);
+
+          await handleChecklistPhoto(item.id, compressedFile);
+
+          e.target.value = '';
+        } catch (error) {
+          console.error('Erro no input da foto:', error);
+
+          notify('Não foi possível anexar a foto.', 'error');
+        }
+      }}
       className="w-full text-xs text-zinc-600"
     />
 
-    {item.photo && (
-      <img
-        src={item.photo}
-        alt="Foto do item"
-        className="mt-3 w-full max-h-48 object-cover rounded-lg border border-zinc-200"
-      />
+    {item.photos && item.photos.length > 0 && (
+      <div className="grid grid-cols-2 gap-2 mt-3">
+        {item.photos.map((photo, index) => (
+          <img
+            key={index}
+            src={photo}
+            alt={`Foto ${index + 1}`}
+            className="w-full h-32 object-cover rounded-lg border border-zinc-200"
+          />
+        ))}
+      </div>
     )}
   </div>
 )}
-
 </div>
 
 ))}
@@ -1802,7 +1870,30 @@ Equipe Manutec`
                                    {i.dayOfWeek && <div className="text-zinc-500 text-[10px] mt-1 font-medium uppercase">Dia: {i.dayOfWeek}</div>}
                                 </td>
                                 <td className="py-3 pr-4 w-[45%] align-top break-words">
-                                  {i.notes ? <div className="text-zinc-600 font-medium whitespace-pre-wrap leading-relaxed text-xs uppercase">{i.notes}</div> : <span className="text-zinc-400 text-[10px] font-medium uppercase">Sem observações</span>}
+                                  <div>
+  {i.notes ? (
+    <div className="text-zinc-600 font-medium whitespace-pre-wrap leading-relaxed text-xs uppercase">
+      {i.notes}
+    </div>
+  ) : (
+    <span className="text-zinc-400 text-[10px] font-medium uppercase">
+      Sem observações
+    </span>
+  )}
+
+  {i.photos && i.photos.length > 0 && (
+    <div className="grid grid-cols-2 gap-3 mt-4">
+      {i.photos.map((photo, index) => (
+        <img
+          key={index}
+          src={photo}
+          alt={`Foto ${index + 1}`}
+          className="w-full max-h-48 object-cover rounded-lg border border-zinc-200"
+        />
+      ))}
+    </div>
+  )}
+</div>
                                 </td>
                                 <td className={`py-3 text-right font-semibold text-xs w-[20%] align-top uppercase ${i.status === 'ok' ? 'text-green-600' : (i.status==='repair'?'text-red-600':(i.status === 'na' ? 'text-zinc-500' : 'text-amber-500'))}`}>
                                   {selectedOrder.osType === 'limpeza' 
