@@ -1637,7 +1637,7 @@ function renderHistoryList() {
               </div>
             </div>
 
-            <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto">
+            <div className="grid grid-cols-1 md:flex md:flex-row gap-2 w-full md:w-auto">
 
 {o.status === 'Pendente' && (
   <button
@@ -1654,7 +1654,7 @@ function renderHistoryList() {
       setNeedsFollowUp(false);
       setCurrentView('new');
     }}
-    className="w-full md:w-auto bg-yellow-50 border border-yellow-200 text-yellow-700 px-3 py-2 rounded-lg font-bold text-[11px] hover:bg-yellow-100 transition-all shadow-sm"
+    className="w-full bg-yellow-50 border border-yellow-200 text-yellow-700 px-3 py-2 rounded-lg font-bold text-[11px] hover:bg-yellow-100 transition-all shadow-sm"
   >
     Finalizar OS
   </button>
@@ -1665,7 +1665,7 @@ function renderHistoryList() {
                   setSelectedOrder(o);
                   setCurrentView('view');
                 }}
-                className="w-full md:w-auto bg-yellow-50 border border-yellow-200 text-yellow-700 px-4 py-2 rounded-lg font-bold text-xs hover:bg-yellow-100 transition-all shadow-sm"
+                className="w-full bg-white border border-zinc-300 text-zinc-700 px-4 py-2 rounded-lg font-bold text-xs hover:bg-zinc-50 transition-all shadow-sm"
               >
                 Visualizar
               </button>
@@ -1678,7 +1678,7 @@ function renderHistoryList() {
                       notify('OS excluída com sucesso.', 'success');
                     }
                   }}
-                  className="w-full md:w-auto bg-yellow-50 border border-yellow-200 text-yellow-700 px-4 py-2 rounded-lg font-bold text-xs hover:bg-yellow-100 transition-all shadow-sm"
+                  className="w-full bg-red-50 border border-red-200 text-red-600 px-4 py-2 rounded-lg font-bold text-xs hover:bg-red-100 transition-all shadow-sm"
                 >
                   Excluir
                 </button>
