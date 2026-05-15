@@ -479,7 +479,7 @@ const handleChecklistPhoto = async (id, file) => {
   if (!file) return;
 
   try {
-    const fileName = `${Date.now()}-${file.name}`;
+    const fileName = `${Date.now()}-${file.name || 'foto.jpg'}`;
 
     const storageRef = ref(storage, `checklists/${fileName}`);
 
@@ -1578,7 +1578,15 @@ if (isEditing) {
 
           notify('Processando foto...', 'info');
 
-          const compressedFile = await compressImage(file);
+          let compressedFile;
+
+try {
+  compressedFile = await compressImage(file);
+} catch (err) {
+  console.error('Erro ao comprimir:', err);
+
+  compressedFile = file;
+}
 
           await handleChecklistPhoto(item.id, compressedFile);
 
