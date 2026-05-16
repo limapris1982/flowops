@@ -1,20 +1,54 @@
 @media print {
-  .print-container {
+  html,
+  body,
+  #root {
     height: auto !important;
+    min-height: auto !important;
     overflow: visible !important;
   }
 
-  table,
-  tr,
-  td,
-  div,
-  section {
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: white !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .print-container {
+    position: static !important;
+    height: auto !important;
+    min-height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    box-shadow: none !important;
+    border: none !important;
+    page-break-after: auto !important;
+  }
+
+  table {
+    width: 100% !important;
+    page-break-inside: auto !important;
+    break-inside: auto !important;
+  }
+
+  tr {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  td {
     page-break-inside: auto !important;
     break-inside: auto !important;
   }
 
   img {
-    max-width: 100% !important;
-    page-break-inside: avoid;
+    max-width: 180px !important;
+    max-height: 180px !important;
+    object-fit: cover !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
   }
 }

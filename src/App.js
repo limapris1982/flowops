@@ -1794,7 +1794,7 @@ Equipe Manutec`
   };
 
     return (
-            <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl border border-zinc-200 p-10 print-container text-[#2F2F2F] animate-in slide-in-from-bottom duration-500">
+            <div className="w-full max-w-4xl mx-auto bg-white rounded-2xl shadow-xl border border-zinc-200 p-10 print-container text-[#2F2F2F] print:shadow-none print:border-0 print:rounded-none print:p-6">
         <div className="no-print mb-6 flex flex-col sm:flex-row gap-2 w-full sm:justify-end">
   <button
     onClick={() => setCurrentView('history')}
