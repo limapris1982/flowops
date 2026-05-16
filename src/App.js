@@ -836,13 +836,65 @@ if (isEditing) {
 
   const pendingSchedulesCount = schedules.filter(s => s.status === 'Agendado').length;
 
-  return (
-    <div className="flex h-screen bg-zinc-100 overflow-hidden relative text-[#2F2F2F]">
-      <style dangerouslySetInnerHTML={{__html: `
-        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
-        * { font-family: 'Roboto', sans-serif !important; font-style: normal !important; }
-        @media print { body * { visibility: hidden; } .print-container, .print-container * { visibility: visible; } .print-container { position: absolute; left: 0; top: 0; width: 100%; border:none; box-shadow:none; padding:0; margin:0; } .no-print { display: none !important; } }
-      `}} />
+ return (
+  <div className="flex min-h-screen bg-zinc-100 relative text-[#2F2F2F] print:block print:bg-white print:overflow-visible">
+    <style dangerouslySetInnerHTML={{__html: `
+      @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
+      * {
+        font-family: 'Roboto', sans-serif !important;
+        font-style: normal !important;
+      }
+
+      @media print {
+        html, body, #root {
+          height: auto !important;
+          min-height: auto !important;
+          overflow: visible !important;
+          background: white !important;
+        }
+
+        body * {
+          visibility: hidden;
+        }
+
+        .print-container,
+        .print-container * {
+          visibility: visible;
+        }
+
+        .print-container {
+          position: static !important;
+          left: auto !important;
+          top: auto !important;
+          width: 100% !important;
+          max-width: none !important;
+          height: auto !important;
+          max-height: none !important;
+          overflow: visible !important;
+          border: none !important;
+          box-shadow: none !important;
+          padding: 0 !important;
+          margin: 0 !important;
+        }
+
+        .no-print {
+          display: none !important;
+        }
+
+        table, tbody, tr, td {
+          page-break-inside: auto !important;
+          break-inside: auto !important;
+        }
+
+        img {
+          max-width: 180px !important;
+          max-height: 180px !important;
+          object-fit: cover !important;
+          page-break-inside: avoid !important;
+        }
+      }
+    `}} />
 
       {notification && (
         <div className={`fixed top-6 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-3 px-4 py-2.5 rounded-lg shadow-lg animate-in slide-in-from-top duration-300 ${notification.type === 'error' ? 'bg-red-600 text-white' : 'bg-[#2F2F2F] text-white'}`}>
