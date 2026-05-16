@@ -1990,7 +1990,13 @@ Equipe Manutec`
         )}
         <div className="bg-white rounded-xl border border-zinc-200 divide-y divide-zinc-100 shadow-sm overflow-hidden">
         {clients
-  .filter(c => showInactiveClients ? c.active === false : c.active !== false)
+  .filter(c => {
+  const contratoAtivo =
+    c.contract?.hasManutencao === true ||
+    c.contract?.hasLimpeza === true;
+
+  return showInactiveClients ? !contratoAtivo : contratoAtivo;
+})
   .map(c => {
             const hasManutencao = c.contract?.hasManutencao === true;
 const hasLimpeza = c.contract?.hasLimpeza === true;
