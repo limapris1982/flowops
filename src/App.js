@@ -1811,8 +1811,76 @@ function renderHistoryList() {
   if (!selectedOrder) return null;
 
   const handlePrintPDF = () => {
-    window.print();
-  };
+  const content = document.querySelector('.print-container')?.innerHTML;
+
+  if (!content) {
+    alert('Não foi possível gerar o PDF.');
+    return;
+  }
+
+  const printWindow = window.open('', '_blank');
+
+  printWindow.document.write(`
+    <html>
+      <head>
+        <title>Laudo Manutec</title>
+        <style>
+          @page {
+            size: A4;
+            margin: 12mm;
+          }
+
+          body {
+            font-family: Arial, sans-serif;
+            color: #2F2F2F;
+            background: white;
+          }
+
+          * {
+            box-sizing: border-box;
+            overflow: visible !important;
+            max-height: none !important;
+          }
+
+          .no-print {
+            display: none !important;
+          }
+
+          img {
+            max-width: 160px !important;
+            max-height: 160px !important;
+            object-fit: cover !important;
+          }
+
+          table {
+            width: 100%;
+            border-collapse: collapse;
+          }
+
+          tr {
+            page-break-inside: avoid;
+            break-inside: avoid;
+          }
+
+          div, section {
+            page-break-inside: auto;
+            break-inside: auto;
+          }
+        </style>
+      </head>
+      <body>
+        ${content}
+      </body>
+    </html>
+  `);
+
+  printWindow.document.close();
+
+  setTimeout(() => {
+    printWindow.focus();
+    printWindow.print();
+  }, 500);
+};
 
   const handleSendEmailClient = () => {
     if (!selectedOrder?.client?.email) {
