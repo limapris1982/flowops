@@ -2009,21 +2009,37 @@ const hasLimpeza = c.contract?.hasLimpeza === true;
                      </div>
                      <button onClick={()=>{ setEditingClient(c); setContractData({ hasManutencao: c.contract?.hasManutencao === true, hasLimpeza: c.contract?.hasLimpeza ?? false, preventiva: c.contract?.preventiva || { total: 1, used: 0 }, emergencial: c.contract?.emergencial || { total: 2, used: 0 }, limpezaDays: c.contract?.limpezaDays || 5, description: c.contract?.description || '' }); setShowContractModal(true); }} className="p-2 border border-zinc-200 rounded-md text-zinc-500 hover:text-orange-600 hover:border-orange-300 hover:bg-orange-50 transition-all shadow-sm"><Edit size={16}/></button>
                    {isAdmin && (
-  <button
-    onClick={async () => {
-      if (window.confirm('Deseja inativar este cliente?')) {
+  c.active === false ? (
+    <button
+      onClick={async () => {
         await updateDoc(
           doc(db, 'artifacts', appId, 'public', 'data', 'clients', c.id),
-          { active: false }
+          { active: true }
         );
 
-        notify('Cliente inativado com sucesso.', 'success');
-      }
-    }}
-    className="p-2 border border-yellow-200 rounded-md text-yellow-700 hover:bg-yellow-50 transition-all shadow-sm"
-  >
-    Inativar
-  </button>
+        notify('Cliente reativado com sucesso.', 'success');
+      }}
+      className="p-2 border border-green-200 rounded-md text-green-700 hover:bg-green-50 transition-all shadow-sm"
+    >
+      Reativar
+    </button>
+  ) : (
+    <button
+      onClick={async () => {
+        if (window.confirm('Deseja inativar este cliente?')) {
+          await updateDoc(
+            doc(db, 'artifacts', appId, 'public', 'data', 'clients', c.id),
+            { active: false }
+          );
+
+          notify('Cliente inativado com sucesso.', 'success');
+        }
+      }}
+      className="p-2 border border-yellow-200 rounded-md text-yellow-700 hover:bg-yellow-50 transition-all shadow-sm"
+    >
+      Inativar
+    </button>
+  )
 )}
                    </div>
                 )}
