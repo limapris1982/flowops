@@ -116,11 +116,11 @@ const LOCATION_OPTIONS = [
 ].map(l => l.toUpperCase());
 
 const DEFAULT_CONTRACT = {
-  hasManutencao: true,
+  hasManutencao: false,
   hasLimpeza: false,
-  preventiva: { total: 1, used: 0 }, 
-  emergencial: { total: 2, used: 0 },
-  limpezaDays: 5,
+  preventiva: { total: 0, used: 0 },
+  emergencial: { total: 0, used: 0 },
+  limpezaDays: 0,
   description: ''
 };
 
