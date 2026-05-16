@@ -1,0 +1,20 @@
+@media print {
+  .print-container {
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  table,
+  tr,
+  td,
+  div,
+  section {
+    page-break-inside: auto !important;
+    break-inside: auto !important;
+  }
+
+  img {
+    max-width: 100% !important;
+    page-break-inside: avoid;
+  }
+}

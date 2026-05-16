@@ -1879,7 +1879,7 @@ Equipe Manutec`
               if (answeredItems.length === 0) return <p className="text-zinc-500 text-sm font-medium uppercase">Nenhum item registrado no checklist.</p>;
               const groupedByLocation = answeredItems.reduce((acc, item) => { const loc = item.location || 'Geral'; if (!acc[loc]) acc[loc] = []; acc[loc].push(item); return acc; }, {});
               return Object.keys(groupedByLocation).map((location, index) => (
-                 <div key={index} className="break-inside-avoid">
+                 <div key={index} className="break-inside-auto">
                     <h4 className="font-bold text-[#2F2F2F] text-base border-b border-zinc-200 pb-2 mb-3 flex items-center gap-2 uppercase"><div className="w-1 h-3 bg-orange-600 rounded-full"></div>{location}</h4>
                     
                     <table className="w-full text-sm border-collapse table-fixed">
