@@ -61,7 +61,7 @@ function checkProfanity(texts) {
 // --- OPÇÕES PADRÃO DE AUTOCOMPLETAR E PESQUISA ---
 const TASK_OPTIONS_MANUTENCAO = [
   'Ar Condicionado (Evaporadora/Condensadora)',
-  'Cabine Primária / Quadros Elétricos',
+  'Quadros Elétricos',
   'Caixas Acopladas',
   'Chiller / Sistemas de Automação',
   'Cubas e Pias',
@@ -111,7 +111,6 @@ const LOCATION_OPTIONS = [
   'Corredor / Áreas Comuns',
   'Casa de Máquinas / TI',
   'Área Externa',
-  'Estacionamento',
   'Geral (Toda a Unidade)'
 ].map(l => l.toUpperCase());
 
@@ -1697,6 +1696,8 @@ if (isEditing) {
 
 function renderHistoryList() {
   const filteredOrders = orders.filter(o => {
+  if (historyFilter === 'manutencao') return o.osType === 'manutencao';
+  if (historyFilter === 'limpeza') return o.osType === 'limpeza';
   if (historyFilter === 'pendentes') return o.status === 'Pendente';
   if (historyFilter === 'concluidas') return o.status === 'Concluída';
   return true;
@@ -1708,10 +1709,12 @@ function renderHistoryList() {
       </h2>
 <div className="flex gap-2">
   {[
-    { id: 'todas', label: 'Todas' },
-    { id: 'pendentes', label: 'Pendentes' },
-    { id: 'concluidas', label: 'Concluídas' },
-  ].map(filter => (
+  { id: 'todas', label: 'Todas' },
+  { id: 'manutencao', label: 'Manutenção' },
+  { id: 'limpeza', label: 'Limpeza' },
+  { id: 'pendentes', label: 'Pendentes' },
+  { id: 'concluidas', label: 'Concluídas' },
+].map(filter => (
     <button
       key={filter.id}
       onClick={() => setHistoryFilter(filter.id)}
@@ -1741,7 +1744,7 @@ function renderHistoryList() {
                   {o.client.name}
                 </h4>
                 <p className="text-xs text-zinc-500 font-medium mt-1 uppercase">
-                  {new Date(o.createdAt).toLocaleDateString('pt-BR')} | Resp: {o.technician}
+                  {new Date(o.createdAt).toLocaleDateString('pt-BR')} | Resp: {o.technician}{new Date((o.client?.date || o.createdAt) + "T12:00:00").toLocaleDateString('pt-BR')} | Resp: {o.technician}
                 </p>
                 <span className={`inline-block mt-2 text-[10px] px-2 py-1 rounded-full font-bold uppercase ${
     o.status === 'Pendente'
@@ -1776,6 +1779,33 @@ function renderHistoryList() {
   </button>
 )}
 
+{isAdmin && (
+  <button
+    onClick={async () => {
+      const novaData = window.prompt(
+        'Digite a nova data do laudo no formato AAAA-MM-DD:',
+        o.client?.date || ''
+      );
+
+      if (!novaData) return;
+
+      await updateDoc(
+        doc(db, 'artifacts', appId, 'public', 'data', 'service_orders', o.id),
+        {
+          client: {
+            ...o.client,
+            date: novaData
+          }
+        }
+      );
+
+      notify('Data do laudo atualizada com sucesso.', 'success');
+    }}
+    className="w-full bg-blue-50 border border-blue-200 text-blue-700 px-4 py-2 rounded-lg font-bold text-xs hover:bg-blue-100 transition-all shadow-sm"
+  >
+    Editar Data
+  </button>
+)}
               <button
                 onClick={() => {
                   setSelectedOrder(o);
@@ -1810,76 +1840,524 @@ function renderHistoryList() {
   function renderViewOrder() {
   if (!selectedOrder) return null;
 
-  const handlePrintPDF = () => {
-  const content = document.querySelector('.print-container')?.innerHTML;
-
-  if (!content) {
-    alert('Não foi possível gerar o PDF.');
+ const handlePrintPDF = () => {
+  if (!selectedOrder) {
+    alert('Relatório não encontrado.');
     return;
   }
 
-  const printWindow = window.open('', '_blank');
+  const safe = (value) =>
+    String(value || '')
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#039;');
 
-  printWindow.document.write(`
+  const formatDate = (date) => {
+    try {
+      return new Date(date + "T12:00:00").toLocaleDateString('pt-BR');
+    } catch {
+      return '';
+    }
+  };
+
+  const items = Array.isArray(selectedOrder.checklistItems)
+    ? selectedOrder.checklistItems.filter(i => i.task)
+    : [];
+
+  const totalItens = items.length;
+  const totalOk = items.filter(i => i.status === 'ok').length;
+  const totalReparo = items.filter(i => i.status === 'repair').length;
+  const totalNA = items.filter(i => i.status === 'na').length;
+
+  const groupedByLocation = items.reduce((acc, item) => {
+    const loc = item.location || 'Geral';
+    if (!acc[loc]) acc[loc] = [];
+    acc[loc].push(item);
+    return acc;
+  }, {});
+
+  const statusLabel = (status) => {
+    if (status === 'ok') return 'OK';
+    if (status === 'repair') return 'Reparo';
+    if (status === 'na') return 'N/A';
+    return 'Pendente';
+  };
+
+  const statusClass = (status) => {
+    if (status === 'ok') return 'status ok';
+    if (status === 'repair') return 'status repair';
+    if (status === 'na') return 'status na';
+    return 'status pending';
+  };
+
+  const checklistHTML = Object.keys(groupedByLocation).map(location => `
+    <section class="location-block">
+      <h2>${safe(location)}</h2>
+
+      ${groupedByLocation[location].map(item => `
+        <div class="item-card">
+          <div class="item-header">
+            <div>
+              <p class="label">Item / Serviço</p>
+              <h3>${safe(item.task)}</h3>
+            </div>
+            <span class="${statusClass(item.status)}">${statusLabel(item.status)}</span>
+          </div>
+
+          <div class="notes">
+            <p class="label">Apontamento técnico</p>
+            <p>${safe(item.notes || 'Sem observações registradas.')}</p>
+          </div>
+
+          ${item.photos && item.photos.length > 0 ? `
+            <div class="photos">
+              ${item.photos.map((photo, index) => `
+                <div class="photo-box">
+                  <img src="${photo}" loading="lazy" />
+                  <span>Foto ${index + 1}</span>
+                </div>
+              `).join('')}
+            </div>
+          ` : ''}
+        </div>
+      `).join('')}
+    </section>
+  `).join('');
+
+  const signature = selectedOrder.signatureData || selectedOrder.signature || '';
+const reportNumber =
+  selectedOrder.id?.slice(0, 6).toUpperCase();
+
+const fileName =
+  `Laudo-Manutec-${reportNumber}-${selectedOrder.client?.name || 'Cliente'}`;
+  const html = `
     <html>
       <head>
-        <title>Laudo Manutec</title>
+        <title>${safe(fileName)}</title>
         <style>
           @page {
             size: A4;
             margin: 12mm;
           }
 
-          body {
-            font-family: Arial, sans-serif;
-            color: #2F2F2F;
-            background: white;
-          }
-
           * {
             box-sizing: border-box;
-            overflow: visible !important;
-            max-height: none !important;
           }
 
-          .no-print {
-            display: none !important;
+          body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            color: #2F2F2F;
+            background: #ffffff;
+            font-size: 12px;
           }
 
-          img {
-            max-width: 160px !important;
-            max-height: 160px !important;
-            object-fit: cover !important;
-          }
-
-          table {
+          .page {
             width: 100%;
-            border-collapse: collapse;
           }
 
-          tr {
-            page-break-inside: avoid;
-            break-inside: avoid;
+          .header {
+            border-bottom: 3px solid #f97316;
+            padding-bottom: 18px;
+            margin-bottom: 22px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 24px;
           }
 
-          div, section {
-            page-break-inside: auto;
-            break-inside: auto;
+          .brand h1 {
+            margin: 0;
+            font-size: 28px;
+            line-height: 1;
+            color: #2F2F2F;
+            letter-spacing: -0.5px;
+          }
+
+          .brand h1 span {
+            color: #f97316;
+          }
+
+          .brand p {
+            margin: 8px 0 0;
+            text-transform: uppercase;
+            font-size: 11px;
+            font-weight: 700;
+            color: #666;
+          }
+
+          .report-code {
+            text-align: right;
+            font-size: 11px;
+          }
+
+          .report-code strong {
+            display: block;
+            font-size: 16px;
+            margin-top: 4px;
+            color: #2F2F2F;
+          }
+
+          .status-pill {
+            display: inline-block;
+            margin-top: 8px;
+            padding: 5px 10px;
+            border-radius: 999px;
+            background: #fff7ed;
+            color: #ea580c;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 10px;
+          }
+
+          .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-bottom: 18px;
+          }
+
+          .info-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 14px;
+            background: #fafafa;
+          }
+
+          .label {
+            margin: 0 0 5px;
+            font-size: 9px;
+            color: #71717a;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+          }
+
+          .info-card h2 {
+            margin: 0 0 5px;
+            font-size: 15px;
+            text-transform: uppercase;
+          }
+
+          .info-card p {
+            margin: 3px 0;
+            font-size: 11px;
+            color: #444;
+          }
+
+          .summary {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin: 22px 0;
+          }
+
+          .summary-card {
+            border-radius: 12px;
+            padding: 12px;
+            background: #f8fafc;
+            border: 1px solid #e5e7eb;
+          }
+
+          .summary-card strong {
+            font-size: 20px;
+            display: block;
+          }
+
+          .summary-card span {
+            font-size: 9px;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: #71717a;
+          }
+
+          .alert {
+            border: 1px solid #fecaca;
+            background: #fef2f2;
+            color: #991b1b;
+            padding: 14px;
+            border-radius: 12px;
+            margin: 18px 0;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 11px;
+          }
+
+          .location-block {
+  margin-top: 18px;
+}
+
+          .location-block h2 {
+            font-size: 15px;
+            margin: 0 0 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e5e7eb;
+            text-transform: uppercase;
+          }
+
+          .item-card {
+  margin-bottom: 10px;
+}
+
+          .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 10px;
+          }
+
+          .item-header h3 {
+            margin: 0;
+            font-size: 13px;
+            text-transform: uppercase;
+          }
+
+          .status {
+            white-space: nowrap;
+            border-radius: 999px;
+            padding: 5px 9px;
+            font-size: 9px;
+            font-weight: 800;
+            text-transform: uppercase;
+          }
+
+          .status.ok {
+            background: #dcfce7;
+            color: #166534;
+          }
+
+          .status.repair {
+            background: #fee2e2;
+            color: #991b1b;
+          }
+
+          .status.na {
+            background: #f4f4f5;
+            color: #52525b;
+          }
+
+          .status.pending {
+            background: #fef3c7;
+            color: #92400e;
+          }
+
+          .notes {
+            margin-top: 8px;
+          }
+
+         .notes p:last-child {
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+          .photos {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-top: 12px;
+}
+
+          .photo-box {
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            overflow: hidden;
+            background: #fafafa;
+          }
+
+          .photo-box img {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  display: block;
+}
+
+          .photo-box span {
+            display: block;
+            padding: 5px;
+            font-size: 9px;
+            color: #71717a;
+            font-weight: 700;
+            text-transform: uppercase;
+          }
+
+          .signatures {
+  margin-top: 45px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  page-break-inside: avoid;
+}
+
+.signature-box {
+  height: 105px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.signature-line {
+  border-top: 1px solid #2F2F2F;
+  height: 1px;
+  margin-bottom: 8px;
+}
+
+.signature-image-area {
+  height: 50px;
+  display: flex;
+  align-items: center;
+}
+
+.signature-image-area img {
+  max-height: 48px;
+  max-width: 150px;
+  object-fit: contain;
+}
+
+.signature-box strong {
+  display: block;
+  text-transform: uppercase;
+  font-size: 11px;
+  margin-top: 4px;
+}
+
+.signature-box span {
+  font-size: 9px;
+  color: #71717a;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+          .footer {
+            margin-top: 28px;
+            border-top: 1px solid #e5e7eb;
+            padding-top: 10px;
+            font-size: 9px;
+            color: #71717a;
+            text-align: center;
+            text-transform: uppercase;
+          }
+
+          @media print {
+            body {
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
+            }
+
+            .item-card {
+              page-break-inside: avoid;
+            }
           }
         </style>
       </head>
+
       <body>
-        ${content}
+        <main class="page">
+          <header class="header">
+            <div class="brand">
+              <h1>Manutec<span>OS</span></h1>
+              <p>
+                ${selectedOrder.osType === 'limpeza'
+                  ? 'Relatório de Limpeza e Conservação'
+                  : 'Laudo Técnico de Campo'}
+              </p>
+            </div>
+
+            <div class="report-code">
+              Código de relatório
+              <strong>#${safe(selectedOrder.id?.slice(0,8).toUpperCase())}</strong>
+              Emitido em: ${formatDate(selectedOrder.client?.date)}
+              <div class="status-pill">${safe(selectedOrder.status || 'Concluída')}</div>
+            </div>
+          </header>
+
+          <section class="info-grid">
+            <div class="info-card">
+              <p class="label">Unidade inspecionada</p>
+              <h2>${safe(selectedOrder.client?.name)}</h2>
+              <p>${safe(selectedOrder.client?.address)}</p>
+              <p>Contato: ${safe(selectedOrder.client?.responsible || 'Preposto')}</p>
+            </div>
+
+            <div class="info-card">
+              <p class="label">Execução</p>
+              <h2>${safe(selectedOrder.technician)}</h2>
+              <p>${selectedOrder.osType === 'limpeza' ? 'Auxiliar responsável' : 'Responsável técnico'}</p>
+              <p>Visita: ${safe(selectedOrder.visitType?.replace('_', ' '))}</p>
+              <p>Setor: ${selectedOrder.osType === 'manutencao' ? 'Técnica' : 'Conservação e Limpeza'}</p>
+            </div>
+          </section>
+
+          <section class="summary">
+            <div class="summary-card">
+              <strong>${totalItens}</strong>
+              <span>Itens registrados</span>
+            </div>
+            <div class="summary-card">
+              <strong>${totalOk}</strong>
+              <span>Itens OK</span>
+            </div>
+            <div class="summary-card">
+              <strong>${totalReparo}</strong>
+              <span>Reparos</span>
+            </div>
+            <div class="summary-card">
+              <strong>${totalNA}</strong>
+              <span>N/A</span>
+            </div>
+          </section>
+
+          ${selectedOrder.needsFollowUp ? `
+            <div class="alert">
+              Atenção: foi sinalizada necessidade de retorno técnico, novo agendamento ou reposição de peça/material.
+            </div>
+          ` : ''}
+
+          ${checklistHTML}
+
+          <section class="signatures">
+  <div class="signature-box">
+    <div class="signature-image-area"></div>
+
+    <strong>${safe(selectedOrder.technician)}</strong>
+
+    <div class="signature-line"></div>
+
+    <span>Assinatura técnica</span>
+  </div>
+
+  <div class="signature-box">
+    <div class="signature-image-area">
+      ${signature ? `<img src="${signature}" />` : ''}
+    </div>
+
+    <strong>${safe(selectedOrder.client?.name)}</strong>
+
+    <div class="signature-line"></div>
+
+    <span>Assinatura do cliente</span>
+  </div>
+</section>
+
+          <footer class="footer">
+            Manutec Soluções em Manutenção — Laudo gerado eletronicamente pelo ManutecOS.
+          </footer>
+        </main>
       </body>
     </html>
-  `);
+  `;
 
+  const printWindow = window.open('', '_blank');
+
+  printWindow.document.open();
+  printWindow.document.write(html);
   printWindow.document.close();
 
   setTimeout(() => {
     printWindow.focus();
     printWindow.print();
-  }, 500);
+  }, 700);
 };
 
   const handleSendEmailClient = () => {
