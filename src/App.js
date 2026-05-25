@@ -314,7 +314,7 @@ export default function App() {
 
   const saveOSDraft = () => {
   try {
-    sessionStorage.setItem('manutec_os_draft', JSON.stringify({
+    sessionStorage.setItem('flowops_os_draft', JSON.stringify({
       currentView,
       selectedOrder,
       editingOrder,
@@ -583,14 +583,14 @@ const handleChecklistPhoto = async (id, file) => {
           }
           const clientHtml = `
             <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #2F2F2F; max-width: 600px; margin: 0 auto; line-height: 1.6;">
-              <h2 style="color: #ea580c; border-bottom: 2px solid #ea580c; padding-bottom: 10px;">Manutec - Confirmação de Agendamento</h2>
+              <h2 style="color: #ea580c; border-bottom: 2px solid #ea580c; padding-bottom: 10px;">FlowOps - Confirmação de de Ordem de Serviço</h2>
               <p>Olá, <strong>${clientRecord.responsible || clientRecord.name}</strong>,</p>
               <p>Uma nova visita técnica foi agendada para a sua unidade.</p>
               <div style="background-color: #f4f4f5; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #ea580c;">
                 <p style="margin: 0 0 8px 0;"><strong>Data:</strong> ${new Date(newSchedule.date + "T12:00:00").toLocaleDateString('pt-BR')}</p>
                 <p style="margin: 0 0 8px 0;"><strong>Horário Previsto:</strong> ${newSchedule.time}</p>
-                <p style="margin: 0 0 8px 0;"><strong>Técnico Responsável:</strong> ${techRecord ? techRecord.name : 'A definir pela Manutec'}</p>
-                <p style="margin: 0;"><strong>Tipo de Visita:</strong> ${newSchedule.visitType.replace('_', ' ').toUpperCase()}</p>
+                <p style="margin: 0 0 8px 0;"><strong>Técnico Responsável:</strong> ${techRecord ? techRecord.name : 'A definir pela FlowOps'}</p>
+                <p style="margin: 0;"><strong>Tipo de Operação:</strong> ${newSchedule.visitType.replace('_', ' ').toUpperCase()}</p>
               </div>
               ${validScheduledItems.length > 0 || newSchedule.notes ? `
               <h3 style="color: #2F2F2F; font-size: 16px;">Pré-diagnóstico / Solicitação:</h3>
@@ -598,12 +598,12 @@ const handleChecklistPhoto = async (id, file) => {
                 ${itemsHtml}
                 ${newSchedule.notes ? `<li><strong>Observações:</strong> ${newSchedule.notes}</li>` : ''}
               </ul>` : ''}
-              <p style="margin-top: 30px; font-size: 12px; color: #9ca3af;">Este é um e-mail automático gerado pelo sistema ManutecOS.</p>
+              <p style="margin-top: 30px; font-size: 12px; color: #9ca3af;">Este é um e-mail automático gerado pelo sistema FlowOps.</p>
             </div>
           `;
           await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'mail'), {
             to: clientRecord.email,
-            message: { subject: `Agendamento Confirmado: ${new Date(newSchedule.date + "T12:00:00").toLocaleDateString('pt-BR')} - Manutec`, html: clientHtml },
+            message: { subject: `Agendamento Confirmado: ${new Date(newSchedule.date + "T12:00:00").toLocaleDateString('pt-BR')} - Flo`, html: clientHtml },
             createdAt: new Date().toISOString()
           });
         } catch (emailErr) { console.error("Erro e-mail cliente:", emailErr); }
@@ -617,7 +617,7 @@ const handleChecklistPhoto = async (id, file) => {
           }
           const techHtml = `
             <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #2F2F2F; max-width: 600px; margin: 0 auto; line-height: 1.6;">
-              <h2 style="color: #2F2F2F; border-bottom: 2px solid #2F2F2F; padding-bottom: 10px;">Nova OS Agendada - Manutec</h2>
+              <h2 style="color: #2F2F2F; border-bottom: 2px solid #2F2F2F; padding-bottom: 10px;">Nova OS Agendada - FlowOps</h2>
               <p>Olá, <strong>${techRecord.name}</strong>,</p>
               <p>Você tem um novo atendimento técnico agendado.</p>
               <div style="background-color: #f4f4f5; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #2F2F2F;">
@@ -625,7 +625,7 @@ const handleChecklistPhoto = async (id, file) => {
                 <p style="margin: 0 0 8px 0;"><strong>Endereço:</strong> ${clientRecord ? clientRecord.address : 'N/A'}</p>
                 <p style="margin: 0 0 8px 0;"><strong>Data:</strong> ${new Date(newSchedule.date + "T12:00:00").toLocaleDateString('pt-BR')}</p>
                 <p style="margin: 0 0 8px 0;"><strong>Horário Previsto:</strong> ${newSchedule.time}</p>
-                <p style="margin: 0;"><strong>Tipo de Visita:</strong> ${newSchedule.visitType.replace('_', ' ').toUpperCase()}</p>
+                <p style="margin: 0;"><strong>Tipo de Operação:</strong> ${newSchedule.visitType.replace('_', ' ').toUpperCase()}</p>
               </div>
               ${validScheduledItems.length > 0 || newSchedule.notes ? `
               <h3 style="color: #2F2F2F; font-size: 16px;">Detalhes do Chamado:</h3>
@@ -633,12 +633,12 @@ const handleChecklistPhoto = async (id, file) => {
                 ${itemsHtml}
                 ${newSchedule.notes ? `<li><strong>Observações do Cliente:</strong> ${newSchedule.notes}</li>` : ''}
               </ul>` : ''}
-              <p style="margin-top: 30px; font-size: 12px; color: #9ca3af;">Acesse o painel do ManutecOS para efetuar a baixa desta OS.</p>
+              <p style="margin-top: 30px; font-size: 12px; color: #9ca3af;">Acesse o painel do FlowOps para efetuar a baixa desta OS.</p>
             </div>
           `;
           await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'mail'), {
             to: techRecord.email,
-            message: { subject: `Novo Agendamento: ${clientRecord?.name} - Manutec`, html: techHtml },
+            message: { subject: `Novo Agendamento: ${clientRecord?.name} - FlowOps`, html: techHtml },
             createdAt: new Date().toISOString()
           });
         } catch (emailErr) { console.error("Erro e-mail técnico:", emailErr); }
@@ -734,11 +734,11 @@ if (isEditing) {
           ).join('');
           const emailHtml = `
             <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #2F2F2F; max-width: 600px; margin: 0 auto; line-height: 1.6;">
-              <h2 style="color: #ea580c; border-bottom: 2px solid #ea580c; padding-bottom: 10px;">Manutec - Soluções em Manutenção</h2>
+              <h2 style="color: #ea580c; border-bottom: 2px solid #ea580c; padding-bottom: 10px;">Sistema operacional para equipes técnicas</h2>
               <p>Olá, <strong>${clientData.responsible || clientData.name}</strong>,</p>
               <p>Informamos que o atendimento técnico na unidade <strong>${clientData.name}</strong> foi finalizado.</p>
               <div style="background-color: #f4f4f5; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #2F2F2F;">
-                <p style="margin: 0 0 8px 0;"><strong>Código do Laudo:</strong> #${newOsRef.id.slice(0,8).toUpperCase()}</p>
+                <p style="margin: 0 0 8px 0;"><strong>Código da OS:</strong> #${newOsRef.id.slice(0,8).toUpperCase()}</p>
                 <p style="margin: 0 0 8px 0;"><strong>Data:</strong> ${new Date(clientData.date + "T12:00:00").toLocaleDateString('pt-BR')}</p>
                 <p style="margin: 0 0 8px 0;"><strong>Técnico Responsável:</strong> ${selectedTech ? selectedTech.name : 'N/A'}</p>
                 <p style="margin: 0;"><strong>Tipo de Serviço:</strong> ${finalVisitType.replace('_', ' ').toUpperCase()}</p>
@@ -761,12 +761,12 @@ if (isEditing) {
                 <p style="margin: 0; color: #991b1b;">Foi sinalizada a necessidade de um novo agendamento com reposição de peça(s) / material adicional para a conclusão definitiva deste serviço.</p>
               </div>
               ` : ''}
-              <p style="margin-top: 30px; font-size: 12px; color: #9ca3af;">Este é um e-mail automático gerado pelo sistema ManutecOS.</p>
+              <p style="margin-top: 30px; font-size: 12px; color: #9ca3af;">Este é um e-mail automático gerado pelo sistema FlowOps.</p>
             </div>
           `;
           await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'mail'), {
             to: clientData.email,
-            message: { subject: `Ordem de Serviço Concluída #${newOsRef.id.slice(0,8).toUpperCase()} - Manutec`, html: emailHtml },
+            message: { subject: `Ordem de Serviço Concluída #${newOsRef.id.slice(0,8).toUpperCase()} - FlowOps`, html: emailHtml },
             osId: newOsRef.id,
             createdAt: new Date().toISOString()
           });
@@ -819,13 +819,13 @@ if (isEditing) {
           * { font-family: 'Roboto', sans-serif !important; font-style: normal !important; }
         `}} />
         <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full border border-zinc-200">
-          <div className="flex justify-center mb-8"><div className="bg-orange-600 p-2 rounded-lg shadow-sm"><Wrench className="text-white" size={28}/></div><div className="flex flex-col ml-3 justify-center"><span className="text-2xl tracking-tight text-[#2F2F2F] font-bold leading-none">Manutec</span><span className="text-orange-600 font-semibold text-sm leading-tight mt-0.5">Soluções em Manutenção</span></div></div>
-          <h2 className="text-lg text-center text-[#2F2F2F] mb-6 font-semibold">Acesso ao Sistema</h2>
+          <div className="flex justify-center mb-8"><div className="bg-orange-600 p-2 rounded-lg shadow-sm"><Activity className="text-white" size={28}/></div><div className="flex flex-col ml-3 justify-center"><span className="text-2xl tracking-tight text-[#2F2F2F] font-bold leading-none">FlowOps</span><span className="text-orange-600 font-semibold text-sm leading-tight mt-0.5">Controle Operacional inteligente</span></div></div>
+          <h2 className="text-lg text-center text-[#2F2F2F] mb-6 font-semibold">Central Operacional</h2>
           {authError && <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm mb-4 border border-red-200 flex items-start"><AlertTriangle size={16} className="mr-2 mt-0.5 shrink-0" /><span>{authError}</span></div>}
           <form onSubmit={handleAuthSubmit} className="space-y-4">
-            <div><label className="block text-sm text-[#2F2F2F] font-medium mb-1">E-mail Corporativo</label><input type="email" required value={authEmail} onChange={e => setAuthEmail(e.target.value)} className="w-full px-4 py-2.5 rounded-lg border border-zinc-300 focus:ring-2 focus:ring-orange-500 outline-none text-[#2F2F2F]" placeholder="exemplo@manutec.com.br" /></div>
+            <div><label className="block text-sm text-[#2F2F2F] font-medium mb-1">E-mail Corporativo</label><input type="email" required value={authEmail} onChange={e => setAuthEmail(e.target.value)} className="w-full px-4 py-2.5 rounded-lg border border-zinc-300 focus:ring-2 focus:ring-orange-500 outline-none text-[#2F2F2F]" placeholder="exemplo@empresa.com.br" /></div>
             <div><label className="block text-sm text-[#2F2F2F] font-medium mb-1">Senha de Acesso</label><input type="password" required value={authPassword} onChange={e => setAuthPassword(e.target.value)} className="w-full px-4 py-2.5 rounded-lg border border-zinc-300 focus:ring-2 focus:ring-orange-500 outline-none text-[#2F2F2F]" placeholder="••••••••" /></div>
-            <button type="submit" disabled={isAuthenticating} className="w-full py-3 mt-2 bg-orange-600 text-white font-medium text-sm rounded-lg shadow-sm hover:bg-orange-700 transition-colors disabled:opacity-50">{isAuthenticating ? 'Aguarde...' : (isLoginMode ? 'Acessar' : 'Cadastrar Perfil')}</button>
+            <button type="submit" disabled={isAuthenticating} className="w-full py-3 mt-2 bg-orange-600 text-white font-medium text-sm rounded-lg shadow-sm hover:bg-orange-700 transition-colors disabled:opacity-50">{isAuthenticating ? 'Aguarde...' : (isLoginMode ? 'Entrar na operação' : 'Cadastrar Perfil')}</button>
           </form>
           <div className="mt-6 text-center"><button type="button" onClick={() => { setIsLoginMode(!isLoginMode); setAuthError(''); setAuthCode(''); }} className="text-orange-600 text-sm font-medium hover:underline">{isLoginMode ? 'Primeiro acesso? Registre-se' : 'Já sou cadastrado'}</button></div>
         </div>
@@ -904,8 +904,10 @@ if (isEditing) {
 
       <aside className="w-64 bg-[#2F2F2F] text-white flex flex-col hidden md:flex shrink-0 border-r border-zinc-800">
         <div className="p-6 border-b border-zinc-800 bg-[#262626]">
-           <div className="flex items-center gap-3 mb-2"><div className="bg-orange-600 p-2 rounded-lg shadow-sm"><Wrench className="text-white" size={18}/></div><div className="flex flex-col"><h1 className="text-lg font-bold text-white leading-none">Manutec</h1><span className="text-orange-500 font-medium text-[10px] mt-1 uppercase tracking-wide">Soluções em Manutenção</span></div></div>
-           <p className="text-xs text-zinc-400 font-medium mt-2">Portal de Serviços</p>
+           <div className="flex items-center gap-3 mb-2"><div className="bg-orange-600 p-2 rounded-lg shadow-sm"><Activity className="text-white" size={18}/></div><div className="flex flex-col"><h1 className="text-lg font-bold text-white leading-none">FlowOps</h1><span className="text-zinc-400 font-medium text-[10px] mt-1 uppercase tracking-[0.18em]">
+  Sistema operacional técnico
+</span></div></div>
+           <p className="text-xs text-zinc-400 font-medium mt-2">Central Operacional</p>
         </div>
         <div className="px-4 pt-4 pb-2">
            <div className="bg-zinc-800 p-1 rounded-lg flex text-xs font-medium text-center">
@@ -931,7 +933,7 @@ if (isEditing) {
             { id: 'dashboard', icon: LayoutDashboard, label: 'Resumo Operacional', roles: ['gestor'] },
             { id: 'agenda', icon: CalendarDays, label: 'Agenda', roles: ['gestor', 'tecnico', 'cliente'], badge: pendingSchedulesCount },
             { id: 'new', icon: PlusCircle, label: 'Nova OS', roles: ['gestor', 'tecnico'] },
-            { id: 'history', icon: History, label: 'Meus Laudos', roles: ['gestor', 'tecnico', 'cliente'] },
+            { id: 'history', icon: History, label: 'Histórico Operacional', roles: ['gestor', 'tecnico', 'cliente'] },
             { id: 'clients', icon: Building, label: userRole === 'gestor' ? 'Contratos' : 'Clientes', roles: ['gestor'] },
             { id: 'technicians', icon: UserCog, label: 'Equipe', roles: ['gestor'] },
           ].filter(m => m.roles.includes(userRole)).map(m => {
@@ -950,7 +952,7 @@ if (isEditing) {
 
       <main className="flex-1 flex flex-col h-full overflow-hidden bg-zinc-50">
         <header className="bg-[#2F2F2F] text-white p-4 flex justify-between items-center md:hidden shrink-0 shadow-sm z-20">
-          <div className="flex items-center gap-3"><div className="bg-orange-600 p-1.5 rounded-lg shadow-sm"><Wrench className="text-white" size={16}/></div><div className="flex flex-col"><h1 className="text-base font-bold text-white leading-none">Manutec</h1><span className="text-orange-500 text-[9px] font-medium mt-0.5 uppercase tracking-wide">Soluções em Manutenção</span></div></div>
+          <div className="flex items-center gap-3"><div className="bg-orange-600 p-1.5 rounded-lg shadow-sm"><Wrench className="text-white" size={16}/></div><div className="flex flex-col"><h1 className="text-base font-bold text-white leading-none">FlowOps</h1><span className="text-orange-500 text-[9px] font-medium mt-0.5 uppercase tracking-wide">Sistema operacional técnico</span></div></div>
           <button onClick={handleLogout} className="text-zinc-400 hover:text-red-400 transition-colors"><LogOut size={22} /></button>
         </header>
         <div className="md:hidden bg-[#262626] px-4 py-2 border-t border-zinc-700">
@@ -1100,7 +1102,7 @@ if (isEditing) {
           <div className="inline-flex items-center gap-2 bg-white/10 border border-white/10 rounded-full px-3 py-1 mb-4">
             <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
             <span className="text-[10px] font-bold tracking-[0.22em] text-orange-300 uppercase">
-              ManutecOS Online
+              FlowOps Online
             </span>
           </div>
 
@@ -1112,7 +1114,7 @@ if (isEditing) {
             {user?.email} | Admin: {isAdmin ? 'SIM' : 'NÃO'}
           </p>
           <p className="text-zinc-300 mt-3 text-sm font-medium">
-            Painel executivo da Manutec • {today}
+            Painel executivo da FlowOps • {today}
           </p>
         </div>
       </section>
@@ -1399,7 +1401,7 @@ if (isEditing) {
         }
         className="px-4 py-2 border border-zinc-300 rounded-lg text-xs font-medium hover:bg-green-50 hover:text-green-700 hover:border-green-300 transition-all text-zinc-600 w-full md:w-auto"
       >
-        Finalizar Visita
+        Finalizar Operação
       </button>
     )}
 
@@ -1931,7 +1933,7 @@ const reportNumber =
   selectedOrder.id?.slice(0, 6).toUpperCase();
 
 const fileName =
-  `Laudo-Manutec-${reportNumber}-${selectedOrder.client?.name || 'Cliente'}`;
+  `Laudo-FlowOps-${reportNumber}-${selectedOrder.client?.name || 'Cliente'}`;
   const html = `
     <html>
       <head>
@@ -2256,11 +2258,11 @@ const fileName =
         <main class="page">
           <header class="header">
             <div class="brand">
-              <h1>Manutec<span>OS</span></h1>
+              <h1>FlowOps<span>OS</span></h1>
               <p>
                 ${selectedOrder.osType === 'limpeza'
                   ? 'Relatório de Limpeza e Conservação'
-                  : 'Laudo Técnico de Campo'}
+                  : 'RELATÓRIO OPERACIONAL'}
               </p>
             </div>
 
@@ -2284,8 +2286,8 @@ const fileName =
               <p class="label">Execução</p>
               <h2>${safe(selectedOrder.technician)}</h2>
               <p>${selectedOrder.osType === 'limpeza' ? 'Auxiliar responsável' : 'Responsável técnico'}</p>
-              <p>Visita: ${safe(selectedOrder.visitType?.replace('_', ' '))}</p>
-              <p>Setor: ${selectedOrder.osType === 'manutencao' ? 'Técnica' : 'Conservação e Limpeza'}</p>
+              <p>Operação: ${safe(selectedOrder.visitType?.replace('_', ' '))}</p>
+              <p>Setor: ${selectedOrder.osType === 'manutencao' ? 'Área Operacional' : 'Conservação e Limpeza'}</p>
             </div>
           </section>
 
@@ -2341,7 +2343,7 @@ const fileName =
 </section>
 
           <footer class="footer">
-            Manutec Soluções em Manutenção — Laudo gerado eletronicamente pelo ManutecOS.
+            Sistema operacional para equipes técnicas — Laudo gerado eletronicamente pelo FlowOps.
           </footer>
         </main>
       </body>
@@ -2367,7 +2369,7 @@ const fileName =
     }
 
     const subject = encodeURIComponent(
-      `Laudo Técnico #${selectedOrder.id.slice(0,8).toUpperCase()} - Manutec`
+      `Laudo Técnico #${selectedOrder.id.slice(0,8).toUpperCase()} - FlowOps`
     );
 
     const body = encodeURIComponent(
@@ -2382,7 +2384,7 @@ Técnico: ${selectedOrder.technician}
 Para salvar o laudo em PDF, clique em "Imprimir / Salvar PDF" no sistema.
 
 Atenciosamente,
-Equipe Manutec`
+Equipe FlowOps`
     );
 
     window.open(
@@ -2404,7 +2406,7 @@ Equipe Manutec`
   {userRole !== 'cliente' && (
     <button
       onClick={handleSendEmailClient}
-      className="w-full sm:w-auto flex items-center justify-center px-4 py-2.5 bg-zinc-800 text-white font-medium text-sm rounded-lg shadow-sm hover:bg-zinc-900 transition-all"
+      className="w-full sm:w-auto flex items-center justify-center px-4 py-2.5 bg-black text-white font-medium text-sm rounded-lg shadow-sm hover:bg-zinc-900 transition-all"
     >
       <Mail size={16} className="mr-2"/>
       E-mail Rápido
@@ -2420,9 +2422,9 @@ Equipe Manutec`
   </button>
 </div>
         <div className="flex justify-between items-start border-b-2 border-zinc-200 pb-6 mb-6 mt-2">
-           <div><h1 className="text-3xl font-bold flex flex-col text-[#2F2F2F] leading-none uppercase">Manutec<span className="text-orange-600 text-lg mt-1">Soluções em Manutenção</span></h1><p className="text-zinc-500 text-xs mt-3 font-medium uppercase">
+           <div><h1 className="text-3xl font-bold flex flex-col text-[#2F2F2F] leading-none uppercase">FlowOps<span className="text-orange-600 text-lg mt-1">Sistema operacional técnico</span></h1><p className="text-zinc-500 text-xs mt-3 font-medium uppercase">
   {selectedOrder.osType === 'limpeza'
-    ? 'Relatório de Limpeza e Conservação'
+    ? 'RELATÓRIO OPERACIONAL'
     : 'Laudo Técnico de Campo'}
 </p></div>
            <div className="text-right pt-2">
@@ -2455,7 +2457,7 @@ Equipe Manutec`
   {selectedOrder.osType === 'limpeza'
     ? 'Auxiliar Responsável'
     : 'Responsável Técnico'}
-</p><div className="mt-3 flex flex-col gap-1.5"><p className="text-orange-600 font-medium text-xs uppercase">Visita: {selectedOrder.visitType.replace('_', ' ')}</p><p className="text-zinc-600 font-medium text-xs uppercase">Setor: {selectedOrder.osType === 'manutencao' ? 'Técnica' : 'Conservação e Limpeza'}</p></div></div>
+</p><div className="mt-3 flex flex-col gap-1.5"><p className="text-orange-600 font-medium text-xs uppercase">Operação: {selectedOrder.visitType.replace('_', ' ')}</p><p className="text-zinc-600 font-medium text-xs uppercase">Setor: {selectedOrder.osType === 'manutencao' ? 'Área Operacional' : 'Conservação e Limpeza'}</p></div></div>
         </div>
         {selectedOrder.visitType === 'avulsa' && (
            <div className="mb-10 bg-orange-50 p-5 rounded-xl border border-orange-200">
@@ -2538,7 +2540,7 @@ Equipe Manutec`
   ? 'CONFERÊNCIA DO RESPONSÁVEL'
   : 'APROVAÇÃO DO CLIENTE'}</div>
         </div>
-        <div className="mt-12 text-center border-t border-zinc-100 pt-4"><p className="text-[10px] text-zinc-400 font-medium uppercase">Manutec Soluções em Manutenção - Gerado eletronicamente.</p></div>
+        <div className="mt-12 text-center border-t border-zinc-100 pt-4"><p className="text-[10px] text-zinc-400 font-medium uppercase">FlowOps - Sistema operacional para equipes técnicas - Gerado eletronicamente.</p></div>
       </div>
     );
   }

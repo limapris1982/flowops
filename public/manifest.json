@@ -1,6 +1,6 @@
 {
-  "short_name": "Manutec",
-  "name": "ManutecOS",
+  "name": "FlowOps",
+"short_name": "FlowOps",
   "icons": [
     {
       "src": "logo192.png",
