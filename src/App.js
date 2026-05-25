@@ -31,6 +31,7 @@ import {
   query,
   orderBy,
   setDoc,
+  where,
   arrayUnion
 } from 'firebase/firestore';
 
@@ -370,16 +371,36 @@ export default function App() {
   useEffect(() => {
     if (!user) return;
     
-    const unsubOrders = onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'service_orders'), (snap) => {
+    const unsubOrders = onSnapshot(
+  query(
+    collection(db, 'artifacts', appId, 'public', 'data', 'service_orders'),
+    where('companyId', '==', currentUser?.companyId || 'manutec')
+  ),
+  (snap) => {
       const fetched = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })); fetched.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)); setOrders(fetched);
     });
-    const unsubClients = onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'clients'), (snap) => {
+    const unsubClients = onSnapshot(
+  query(
+    collection(db, 'artifacts', appId, 'public', 'data', 'clients'),
+    where('companyId', '==', user?.companyId || 'manutec')
+  ),
+  (snap) => {
       const fetched = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })); fetched.sort((a, b) => a.name.localeCompare(b.name)); setClients(fetched);
     });
-    const unsubTechs = onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'technicians'), (snap) => {
+    const unsubTechs = onSnapshot(
+  query(
+    collection(db, 'artifacts', appId, 'public', 'data', 'technicians'),
+    where('companyId', '==', user?.companyId || 'manutec')
+  ),
+  (snap) => {
       const fetched = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })); fetched.sort((a, b) => a.name.localeCompare(b.name)); setTechnicians(fetched);
     });
-    const unsubSchedules = onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'schedules'), (snap) => {
+    const unsubSchedules = onSnapshot(
+  query(
+    collection(db, 'artifacts', appId, 'public', 'data', 'schedules'),
+    where('companyId', '==', user?.companyId || 'manutec')
+  ),
+  (snap) => {
       const fetched = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })); fetched.sort((a, b) => new Date(`${a.date}T${a.time}`) - new Date(`${b.date}T${b.time}`)); setSchedules(fetched);
     });
     
@@ -564,6 +585,7 @@ const handleChecklistPhoto = async (id, file) => {
       const techRecord = technicians.find(t => t.id === newSchedule.technicianId);
       const validScheduledItems = newSchedule.scheduledItems.filter(i => i.task.trim() !== '' || i.location.trim() !== '');
       const scheduleRef = await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'schedules'), { 
+        companyId: User?.companyId || 'manutec',
         clientId: newSchedule.clientId,
         date: newSchedule.date,
         time: newSchedule.time,
